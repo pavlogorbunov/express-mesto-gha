@@ -1,11 +1,11 @@
 const cards = require('express').Router();
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const { getCards, postCard, deleteCard, likeCard, dislikeCard } = require('../controllers/cards');
 
-mongoose.connect('mongodb://localhost:27017/mestodb', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+// mongoose.connect('mongodb://localhost:27017/mestodb', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true
+// });
 
 cards.get('/', getCards);
 cards.post('/', postCard);
