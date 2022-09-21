@@ -23,11 +23,12 @@ module.exports.postCard = (req, res) => {
 }
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndDelete(req.params.cardId, (err, res) => {
+  Card.findByIdAndDelete(req.params.cardId, (err, user) => {
     if(err) {
       console.log(err.name);
       return next(err);
     }
+    res.json({message: "DELETED"});
   })
     .then(() => {
       res.status(200).send();
