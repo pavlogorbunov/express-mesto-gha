@@ -24,10 +24,16 @@ module.exports.postCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then(res.status(200).send())
+    .then(() => {
+      res.status(200).send();
+    }
+    )
     .catch(err => {
       if (err.name === 'CastError') {
         return res.status(CAST_ERROR_CODE).send({ message: "Карточка с указанным _id не найдена." });
+      }
+      if (err.name === 'ValidationError') {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные при создании карточки." });
       }
       return res.status(500).send({ message: "Произошла ошибка" });
     });
