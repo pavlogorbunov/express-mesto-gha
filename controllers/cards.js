@@ -22,20 +22,25 @@ module.exports.postCard = (req, res) => {
     });
 }
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.cardId)
+module.exports.deleteCard = (req, res, next) => {
+  Card.findByIdAndDelete(req.params.cardId, (err, res) => {
+    if(err) {
+      console.log(err.name);
+      return next(err);
+    }
+  })
     .then(() => {
       res.status(200).send();
     }
     )
     .catch(err => {
-      if (err.name === 'CastError') {
-        return res.status(CAST_ERROR_CODE).send({ message: "Карточка с указанным _id не найдена." });
-      }
-      if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные при создании карточки." });
-      }
-      return res.status(500).send({ message: "Произошла ошибка" });
+      // if (err.name === 'CastError') {
+      //   return res.status(CAST_ERROR_CODE).send({ message: "Карточка с указанным _id не найдена." });
+      // }
+      // if (err.name === 'ValidationError') {
+      //   return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные при создании карточки." });
+      // }
+      // return res.status(500).send({ message: "Произошла ошибка" });
     });
 }
 
@@ -73,4 +78,15 @@ module.exports.dislikeCard = (req, res) => {
       }
       return res.status(500).send({ message: "Произошла ошибка" });
     });
+}
+
+module.exports.errorHandler = (err, req, res, next) => {
+  if (err.name === 'CastError') {
+    return res.status(404).send({ message: "Not found." });
+  }
+  if (err.name === 'ValidationError') {
+    return res.status(400).send({ message: "Bad request." });
+  }
+  console.log('sfgdfg');
+  return res.status(500).send({ message: "Произошла ошибка" });
 }

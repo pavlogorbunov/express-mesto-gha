@@ -10,8 +10,13 @@ module.exports.getUsers = (req, res) => {
     });
 }
 
-module.exports.getUser = (req, res) => {
-  User.findById(req.params.id)
+module.exports.getUser = (req, res, next) => {
+  User.findById(req.params.id, (err, res) => {
+    if (err) {
+      next(err);
+      return;
+    }
+  })
     .then(user => res.send(user))
     .catch(err => {
       if (err.name === 'CastError') {
@@ -64,4 +69,15 @@ module.exports.patchAvatar = (req, res) => {
       }
       return res.status(500).send({ message: "Произошла ошибка" });
     });
+}
+
+module.exports.errorHandler = (err, req, res, next) => {
+  if (err.name === 'CastError') {
+    return res.status(404).send({ message: "Not found." });
+  }
+  if (err.name === 'ValidationError') {
+    return res.status(400).send({ message: "Bad request." });
+  }
+  console.log('fds');
+  return res.status(500).send({ message: "Произошла ошибка" });
 }
