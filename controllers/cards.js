@@ -91,5 +91,4 @@ module.exports.errorHandler = (err, req, res, next) => {
   } else {
     return res.status(500).send({ message: "Произошла ошибка" });
   }
-
 }

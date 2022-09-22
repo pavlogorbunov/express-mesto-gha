@@ -11,22 +11,19 @@ module.exports.getUsers = (req, res) => {
 }
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.id, (err, res) => {
+  User.findById(req.params.id, (err, user) => {
     if (err) {
-      next(err);
-      return;
+      next(new Error('400'));
+    }
+    if (!user) {
+      next(new Error('404'));
+    }
+    if (user) {
+      res.status(200).send(user);
     }
   })
-    .then(user => res.send(user))
-    .catch(err => {
-      if (err.name === 'CastError') {
-        return res.status(CAST_ERROR_CODE).send({ message: "Пользователь по указанному _id не найден." });
-      }
-      if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные." });
-      }
-      return res.status(500).send({ message: "Произошла ошибка" });
-    });
+    .then(() => { })
+    .catch(() => { });
 }
 
 module.exports.addUser = (req, res) => {
@@ -41,43 +38,50 @@ module.exports.addUser = (req, res) => {
     });
 }
 
-module.exports.patchUser = (req, res) => {
+module.exports.patchUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about, avatar }, { new: true })
-    .then(user => res.send(user))
-    .catch(err => {
+  User.findByIdAndUpdate(req.user._id, { name, about, avatar }, { new: true, runValidators: true },)
+    .then((user) => { return res.status(200).send(user); })
+    .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные при обновлении профиля." });
+        return res.status(400).send({ message: "Bad request." });
       }
       if (err.name === 'CastError') {
-        return res.status(CAST_ERROR_CODE).send({ message: "Пользователь с указанным _id не найден." });
+        return res.status(404).send({ message: "Not found." });
+      } else {
+        return res.status(500).send({ message: "Произошла ошибка" });
       }
-      return res.status(500).send({ message: "Произошла ошибка" });
     });
 }
 
-module.exports.patchAvatar = (req, res) => {
+module.exports.patchAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-    .then(user => res.send(user))
-    .catch(err => {
-      if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные при обновлении аватара." });
-      }
-      if (err.name === 'CastError') {
-        return res.status(CAST_ERROR_CODE).send({ message: "Пользователь с указанным _id не найден." });
-      }
-      return res.status(500).send({ message: "Произошла ошибка" });
-    });
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true }, (err, user) => {
+    if (err) {
+      next(new Error('400'));
+    }
+    if (!user) {
+      next(new Error('404'));
+    }
+    if (user) {
+      res.status(200).send(user);
+    }
+  })
+    .then(() => { })
+    .catch(() => { });
 }
 
 module.exports.errorHandler = (err, req, res, next) => {
-  if (err.name === 'CastError') {
+  console.log('errorHandler User');
+  if (err.message === '400') {
+    return res.status(400).send({ message: "Bad request." });
+  }
+  if (err.message === '404') {
     return res.status(404).send({ message: "Not found." });
   }
   if (err.name === 'ValidationError') {
     return res.status(400).send({ message: "Bad request." });
+  } else {
+    return res.status(500).send({ message: "Произошла ошибка" });
   }
-  console.log('fds');
-  return res.status(500).send({ message: "Произошла ошибка" });
 }
