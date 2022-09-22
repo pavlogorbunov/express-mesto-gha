@@ -39,40 +39,44 @@ module.exports.deleteCard = (req, res, next) => {
     .catch(() => { });
 }
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true },
+    { new: true }, (err, card) => {
+      if (err) {
+        next(new Error('400'));
+      }
+      if (!card) {
+        next(new Error('404'));
+      }
+      if (card) {
+        res.status(200).send(card);
+      }
+    }
   )
-    .then(card => res.send(card))
-    .catch(err => {
-      if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные для постановки/снятии лайка." });
-      }
-      if (err.name === 'CastError') {
-        return res.status(CAST_ERROR_CODE).send({ message: "Передан несуществующий _id карточки." });
-      }
-      return res.status(500).send({ message: "Произошла ошибка" });
-    });
+    .then(() => { })
+    .catch(() => { });
 }
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true },
+    { new: true }, (err, card) => {
+      if (err) {
+        next(new Error('400'));
+      }
+      if (!card) {
+        next(new Error('404'));
+      }
+      if (card) {
+        res.status(200).send(card);
+      }
+    }
   )
-    .then(card => res.send(card))
-    .catch(err => {
-      if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные для постановки/снятии лайка." });
-      }
-      if (err.name === 'CastError') {
-        return res.status(CAST_ERROR_CODE).send({ message: "Передан несуществующий _id карточки." });
-      }
-      return res.status(500).send({ message: "Произошла ошибка" });
-    });
+    .then(() => { })
+    .catch(() => { });
 }
 
 module.exports.errorHandler = (err, req, res, next) => {
