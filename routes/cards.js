@@ -6,6 +6,6 @@ cards.post('/', postCard);
 cards.delete('/:cardId', deleteCard);
 cards.put('/:cardId/likes', likeCard);
 cards.delete('/:cardId/likes', dislikeCard);
-cards.use(errorHandler);
+cards.use('*', errorHandler);
 
 module.exports = cards;

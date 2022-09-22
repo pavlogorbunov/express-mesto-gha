@@ -1,4 +1,5 @@
 const Card = require('../models/card');
+const user = require('../models/user');
 const VALIDATION_ERROR_CODE = 400;
 const CAST_ERROR_CODE = 404;
 
@@ -23,20 +24,19 @@ module.exports.postCard = (req, res) => {
 }
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndDelete(req.params.cardId, (err, card) => {
+  Card.findByIdAndRemove(req.params.cardId, (err, card) => {
     if (err) {
-      console.log(err.name);
-      return next(err);
+      next(new Error('400'));
     }
-  })
-    .then(() => {
+    if (!card) {
+      next(new Error('404'));
+    }
+    if (card) {
       res.status(200).send({ message: "DELETED" });
     }
-    )
-    .catch(err => {
-      console.log(err.name);
-      next(err);
-    });
+  })
+    .then(() => { })
+    .catch(() => { });
 }
 
 module.exports.likeCard = (req, res) => {
@@ -76,10 +76,10 @@ module.exports.dislikeCard = (req, res) => {
 }
 
 module.exports.errorHandler = (err, req, res, next) => {
-  if (err.name === 'MongooseError') {
-    return res.status(404).send({ message: "Not found." });
+  if (err.message === '400') {
+    return res.status(400).send({ message: "Bad request." });
   }
-  if (err.name === 'CastError') {
+  if (err.message === '404') {
     return res.status(404).send({ message: "Not found." });
   }
   if (err.name === 'ValidationError') {
