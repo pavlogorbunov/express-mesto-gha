@@ -1,5 +1,5 @@
 const Card = require('../models/card');
-const user = require('../models/user');
+// const user = require('../models/user');
 const VALIDATION_ERROR_CODE = 400;
 const CAST_ERROR_CODE = 404;
 
@@ -24,19 +24,23 @@ module.exports.postCard = (req, res) => {
 }
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId, (err, card) => {
-    if (err) {
-      next(new Error('400'));
-    }
-    if (!card) {
-      next(new Error('404'));
-    }
-    if (card) {
-      res.status(200).send({ message: "DELETED" });
-    }
-  })
-    .then(() => { })
-    .catch(() => { });
+  Card.findByIdAndRemove(req.params.cardId, { new: true, runValidators: true }
+  )
+    .then((card) => {
+      // console.log('card - ' + card);
+      if (card) {
+        res.status(200).send({ message: "DELETED" });
+      } else {
+        res.status(404).send({ message: "Not found." });
+      }
+    })
+    .catch((err) => {
+      // console.log('err - ' + err.name);
+      if(err.name === 'CastError') {
+        return res.status(400).send({ message: "Bad request." });
+      }
+      res.status(500).send({ message: "Server error." });
+    });
 }
 
 module.exports.likeCard = (req, res, next) => {
