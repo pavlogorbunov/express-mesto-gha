@@ -18,6 +18,6 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "lint": "npx ./node_modules/.bin/eslint ./"
+    "lint": "npx eslint"
   }
 }
