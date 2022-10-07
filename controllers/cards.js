@@ -71,7 +71,7 @@ module.exports.likeCard = (req, res, next) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: "Переданы некорректные данные для постановки/снятия лайка." });
       } else {
         return res.status(500).send({ message: "Server error." });
@@ -93,7 +93,7 @@ module.exports.dislikeCard = (req, res, next) => {
       }
     })
     .catch(err => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: "Переданы некорректные данные для постановки/снятия лайка." });
       } else {
         return res.status(500).send({ message: "Server error." });
