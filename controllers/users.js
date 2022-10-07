@@ -1,12 +1,13 @@
 const User = require('../models/user');
 const VALIDATION_ERROR_CODE = 400;
-const CAST_ERROR_CODE = 404;
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then(users => res.send(users))
+    .then(users => {
+      return res.send(users);
+    })
     .catch(err => {
-      return res.status(500).send({ message: "Произошла ошибка" });
+      return res.status(500).send({ message: "Server error." });
     });
 }
 
@@ -14,7 +15,7 @@ module.exports.getUser = (req, res) => {
   User.findById(req.params.id, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
-        return res.status(200).send({ user });
+        return res.status(200).send(user);
       } else {
         return res.status(404).send({ message: "Пользователь с таким id не найден." });
       }
@@ -30,9 +31,17 @@ module.exports.getUser = (req, res) => {
 
 module.exports.addUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar }, { new: true, runValidators: true },)
-    .then(user => res.send(user))
+
+  // console.log(name);
+  // console.log(about);
+  // console.log(avatar);
+
+  User.create({ name, about, avatar })
+    .then(user => {
+      return res.status(200).send(user);
+    })
     .catch(err => {
+      // console.log(err);
       if (err.name === 'ValidationError') {
         return res.status(VALIDATION_ERROR_CODE).send({ message: "Переданы некорректные данные при создании пользователя." });
       }
@@ -40,18 +49,10 @@ module.exports.addUser = (req, res) => {
     });
 }
 
-module.exports.patchUser = (req, res, next) => {
+module.exports.patchUser = (req, res) => {
   User.findById(req.user._id)
     .then(user => {
-      const username = user.name;
-      const userabout = user.about;
-      const useravatar = user.avatar;
-
-      const { name = username, about = userabout, avatar = useravatar } = req.body;
-
-      console.log(name);
-      console.log(about);
-      console.log(avatar);
+      const { name = user.name, about = user.about, avatar = user.avatar } = req.body;
 
       User.findByIdAndUpdate(req.user._id, { name, about, avatar }, { new: true, runValidators: true },)
         .then((user) => {

@@ -29,10 +29,8 @@ module.exports.getCard = (req, res) => {
 
 module.exports.postCard = (req, res) => {
   const { name, link } = req.body;
-  console.log(req.user._id);
-  Card.create({ name, link, owner: req.user._id }, { new: true, runValidators: true })
+  Card.create({ name, link, owner: req.user._id })
     .then(card => {
-      console.log(req.user._id);
       if (card) {
         return res.status(200).send(card);
       }
