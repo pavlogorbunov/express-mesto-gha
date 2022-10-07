@@ -44,8 +44,10 @@ module.exports.postCard = (req, res) => {
 }
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId, { new: true, runValidators: true })
+  // console.log(req.params.cardId);
+  Card.findByIdAndRemove(req.params.cardId, { runValidators: true })
     .then((card) => {
+      // console.log(card);
       if (card) {
         return res.status(200).send({ message: "DELETED" });
       } else {
@@ -53,6 +55,10 @@ module.exports.deleteCard = (req, res, next) => {
       }
     })
     .catch((err) => {
+      // console.log(err.name);
+      if(err.name === 'CastError') {
+        return res.status(400).send({ message: "Некорректный _id для поиска карточки." });
+      }
       return res.status(500).send({ message: "Server error." });
     });
 }
