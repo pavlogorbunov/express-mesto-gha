@@ -12,7 +12,7 @@ module.exports.getUsers = (req, res) => {
 }
 
 module.exports.getUser = (req, res) => {
-  User.findById(req.params.id, { new: true, runValidators: true })
+  User.findById(req.params.id)
     .then((user) => {
       if (user) {
         return res.status(200).send(user);
