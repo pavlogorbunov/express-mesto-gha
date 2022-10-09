@@ -44,9 +44,9 @@ module.exports.addUser = (req, res) => {
 };
 
 module.exports.patchUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, about, avatar }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
         return res.status(OK_CODE).send(user);
