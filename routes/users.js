@@ -8,5 +8,6 @@ users.get('/:id', getUser);
 users.post('/', addUser);
 users.patch('/me', patchUser);
 users.patch('/me/avatar', patchAvatar);
+// users.use('*', errorHandler);
 
 module.exports = users;
