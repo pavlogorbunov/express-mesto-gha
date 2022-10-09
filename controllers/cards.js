@@ -1,6 +1,6 @@
 const {
   OK_CODE, BAD_REQUEST_CODE, NOT_FOUND_CODE, SERVER_ERROR_CODE,
-} = require('constants');
+} = require('./constants');
 const Card = require('../models/card');
 
 module.exports.getCards = (req, res) => {
