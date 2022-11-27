@@ -1,85 +1,150 @@
-const {
-  OK_CODE, BAD_REQUEST_CODE, NOT_FOUND_CODE, SERVER_ERROR_CODE,
-} = require('./constants');
-const User = require('../models/user');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-module.exports.getUsers = (req, res) => {
+const OK_CODE = 200;
+const MONGO_DB_CONFLICT_CODE = 11000;
+const User = require('../models/user');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
+
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(OK_CODE).send(users))
-    .catch(() => res.status(SERVER_ERROR_CODE).send({ message: 'Server error.' }));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.findById(req.params.id)
     .then((user) => {
       if (user) {
-        return res.status(OK_CODE).send(user);
+        return res
+          .status(OK_CODE)
+          .send(user);
       }
-      return res.status(NOT_FOUND_CODE).send({ message: 'Пользователь с таким id не найден.' });
+      next(new NotFoundError('Пользователь с таким id не найден.'));
+      return null;
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST_CODE).send({ message: 'Введен некорректный id для поиска пользователя.' });
+        next(new BadRequestError('Введен некорректный id для поиска пользователя.'));
+        return;
       }
-      return res.status(SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
+      next(err);
     });
 };
 
-module.exports.addUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.getMe = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (user) {
+        return res
+          .status(OK_CODE)
+          .send(user);
+      }
+      next(new NotFoundError('Пользователь с таким id не найден.'));
+      return null;
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Введен некорректный id для поиска пользователя.'));
+        return;
+      }
+      next(err);
+    });
+};
 
-  // console.log(name);
-  // console.log(about);
-  // console.log(avatar);
+module.exports.addUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  // console.log(`addUser: email - ${email}`);
+  // console.log(`addUser: password - ${password}`);
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
     .then((user) => res.status(OK_CODE).send(user))
     .catch((err) => {
-      // console.log(err);
-      if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      if (err.code === MONGO_DB_CONFLICT_CODE) {
+        next(new ConflictError('Пользователь с таким email уже существует.'));
+        return;
       }
-      return res.status(SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
+        return;
+      }
+      next(err);
     });
 };
 
-module.exports.patchUser = (req, res) => {
+module.exports.patchUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
-        return res.status(OK_CODE).send(user);
+        return res
+          .status(OK_CODE)
+          .send(user);
       }
-      return res.status(NOT_FOUND_CODE).send({ message: 'Пользователь с указанным _id не найден.' });
+      next(new NotFoundError('Пользователь с таким id не найден.'));
+      return null;
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при обновлении пользователя.' });
+        next(new BadRequestError('Переданы некорректные данные при обновлении пользователя.'));
+        return;
       }
       if (err.name === 'CastError') {
-        return res.status(NOT_FOUND_CODE).send({ message: 'Пользователь с указанным _id не найден.' });
+        next(new NotFoundError('Пользователь с таким id не найден.'));
+        return;
       }
-      return res.status(SERVER_ERROR_CODE).send({ message: 'Ошибка по умолчанию.' });
+      next(err);
     });
 };
 
-module.exports.patchAvatar = (req, res) => {
+module.exports.patchAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
-        return res.status(OK_CODE).send(user);
+        return res
+          .status(OK_CODE)
+          .send(user);
       }
-      return res.status(NOT_FOUND_CODE).send({ message: 'Пользователь с указанным _id не найден.' });
+      next(new NotFoundError('Пользователь с указанным id не найден.'));
+      return null;
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара.'));
+        return;
       }
       if (err.name === 'CastError') {
-        return res.status(NOT_FOUND_CODE).send({ message: 'Пользователь с указанным _id не найден.' });
+        next(new NotFoundError('Пользователь с указанным id не найден.'));
+        return;
       }
-      return res.status(SERVER_ERROR_CODE).send({ message: 'Ошибка по умолчанию.' });
+      next(err);
     });
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.cookie('token', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      }).end();
+    })
+    .catch(next);
 };

@@ -1,9 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const { celebrate, Joi, errors } = require('celebrate');
 
 const { PORT = 3000 } = process.env;
 const users = require('./routes/users');
 const cards = require('./routes/cards');
+const { addUser, login } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 const app = express();
 
@@ -17,16 +21,40 @@ function error404(req, res) {
 }
 
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6328aceb060d792139801e85',
-  };
+app.use(cookieParser());
+app.use(errors());
 
-  next();
-});
-app.use('/users', users);
-app.use('/cards', cards);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().min(2).max(30),
+  }),
+}), addUser);
+
+app.use('/users', auth, users);
+app.use('/cards', auth, cards);
 app.use('*', error404);
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
+});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
