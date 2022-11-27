@@ -22,7 +22,6 @@ function error404(req, res) {
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(errors());
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -44,8 +43,11 @@ app.post('/signup', celebrate({
 app.use('/users', auth, users);
 app.use('/cards', auth, cards);
 app.use('*', error404);
+app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
+
+  console.log('-----------error-----------');
 
   res
     .status(statusCode)
@@ -54,6 +56,8 @@ app.use((err, req, res, next) => {
         ? 'На сервере произошла ошибка'
         : message,
     });
+
+  next();
 });
 
 app.listen(PORT, () => {
