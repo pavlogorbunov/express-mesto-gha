@@ -68,7 +68,7 @@ module.exports.addUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      user.password = password;
+      user.password = undefined;
       res.status(OK_CODE).send(user);
     })
     .catch((err) => {
