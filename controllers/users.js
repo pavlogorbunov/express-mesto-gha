@@ -59,9 +59,6 @@ module.exports.addUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  // console.log(`addUser: email - ${email}`);
-  // console.log(`addUser: password - ${password}`);
-
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
@@ -70,7 +67,10 @@ module.exports.addUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then((user) => res.status(OK_CODE).send(user))
+    .then((user) => {
+      user.password = password;
+      res.status(OK_CODE).send(user);
+    })
     .catch((err) => {
       if (err.code === MONGO_DB_CONFLICT_CODE) {
         next(new ConflictError('Пользователь с таким email уже существует.'));
