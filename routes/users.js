@@ -21,7 +21,11 @@ users.patch('/me', celebrate({
 }), patchUser);
 users.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().min(2).max(200),
+    avatar: Joi
+      .string()
+      .pattern(/https?:\/\/[a-z0-9-.]{2,}.[a-z]{2,}\/?[a-z0-9-._~:/?#[\]@!$&'()*+,;=]*#?/i)
+      .min(2)
+      .max(30),
   }),
 }), patchAvatar);
 users.use(errors());
