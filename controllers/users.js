@@ -68,8 +68,9 @@ module.exports.addUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      user.password = undefined;
-      res.status(OK_CODE).send(user);
+      const newUser = user;
+      newUser.password = undefined;
+      res.status(OK_CODE).send(newUser);
     })
     .catch((err) => {
       if (err.code === MONGO_DB_CONFLICT_CODE) {
