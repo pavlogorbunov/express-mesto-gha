@@ -19,6 +19,7 @@ cards.post('/', celebrate({
     name: Joi.string().required().min(2).max(30),
     link: Joi
       .string()
+      .required()
       .pattern(/https?:\/\/[a-z0-9-.]{2,}.[a-z]{2,}\/?[a-z0-9-._~:/?#[\]@!$&'()*+,;=]*#?/i)
       .min(2)
       .max(30),
