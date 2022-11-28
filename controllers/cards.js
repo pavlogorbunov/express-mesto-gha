@@ -61,10 +61,10 @@ module.exports.deleteCard = (req, res, next) => {
           if (cardWithId) {
             next(new AccessDeniedError('Нельзя удалять чужие карточки!'));
           }
+          next(new NotFoundError('Карточка с таким id не найдена.'));
           return null;
         })
         .catch(next);
-      next(new NotFoundError('Карточка с таким id не найдена.'));
       return null;
     })
     .catch((err) => {
