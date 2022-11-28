@@ -2,6 +2,7 @@ const OK_CODE = 200;
 const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
+const AccessDeniedError = require('../errors/access-denied-error');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
@@ -55,6 +56,14 @@ module.exports.deleteCard = (req, res, next) => {
           .status(OK_CODE)
           .send({ message: 'DELETED' });
       }
+      Card.findById(req.params.cardId)
+        .then((cardWithId) => {
+          if (cardWithId) {
+            next(new AccessDeniedError('Нельзя удалять чужие карточки!'));
+          }
+          return null;
+        })
+        .catch(next);
       next(new NotFoundError('Карточка с таким id не найдена.'));
       return null;
     })
