@@ -1,12 +1,18 @@
 const users = require('express').Router();
-const { celebrate, Joi, errors } = require('celebrate');
+const {
+  celebrate, Joi, Segments, errors,
+} = require('celebrate');
 const {
   getUsers, getUser, patchUser, patchAvatar, getMe,
 } = require('../controllers/users');
 
 users.get('/', getUsers);
 users.get('/me', getMe);
-users.get('/:id', getUser);
+users.get('/:id', celebrate({
+  [Segments.PARAMS]: Joi.object().keys({
+    id: Joi.string().alphanum().length(24),
+  }),
+}), getUser);
 users.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
