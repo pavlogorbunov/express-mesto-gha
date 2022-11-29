@@ -10,7 +10,7 @@ cards.get('/', getCards);
 
 cards.get('/:id', celebrate({
   [Segments.PARAMS]: Joi.object().keys({
-    id: Joi.string().alphanum().length(24),
+    id: Joi.string().hex().length(24),
   }),
 }), getCard);
 
@@ -28,19 +28,19 @@ cards.post('/', celebrate({
 
 cards.delete('/:cardId', celebrate({
   [Segments.PARAMS]: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 }), deleteCard);
 
 cards.put('/:cardId/likes', celebrate({
   [Segments.PARAMS]: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 }), likeCard);
 
 cards.delete('/:cardId/likes', celebrate({
   [Segments.PARAMS]: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 }), dislikeCard);
 
