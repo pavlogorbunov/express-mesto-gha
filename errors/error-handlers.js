@@ -1,3 +1,5 @@
+const Error404 = require('./error404');
+
 const handleError = (err, req, res, next) => {
   if (!err) return;
 
@@ -14,4 +16,9 @@ const handleError = (err, req, res, next) => {
   next();
 };
 
-module.exports = handleError;
+function handleError404(req, res, next) {
+  // console.log('________________404________________');
+  next(new Error404('Page not found. 404.'));
+}
+
+module.exports = { handleError, handleError404 };
