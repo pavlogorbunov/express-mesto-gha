@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const OK_CODE = 200;
 const MONGO_DB_CONFLICT_CODE = 11000;
+const { JWT_SECRET = 'dev-key' } = process.env;
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
@@ -141,7 +142,7 @@ module.exports.login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res.status(OK_CODE).cookie('token', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,

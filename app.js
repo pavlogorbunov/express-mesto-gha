@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
+const helmet = require('helmet');
 
 const { PORT = 3000 } = process.env;
 const users = require('./routes/users');
@@ -9,6 +10,7 @@ const cards = require('./routes/cards');
 const { addUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { handleError, handleError404 } = require('./errors/error-handlers');
+const { limiter, createAccountLimiter } = require('./middlewares/rate-limiters');
 
 const app = express();
 
@@ -20,6 +22,9 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(limiter);
+app.use(helmet());
+
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -27,7 +32,7 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
-app.post('/signup', celebrate({
+app.post('/signup', createAccountLimiter, celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
