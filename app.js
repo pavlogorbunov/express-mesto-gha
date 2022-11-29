@@ -8,10 +8,15 @@ const users = require('./routes/users');
 const cards = require('./routes/cards');
 const { addUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const error404 = require('./errors/error404');
+// const handleError404 = require('./errors/error404');
+const Error404 = require('./errors/error404');
 const handleError = require('./errors/error-handler');
 
 const app = express();
+
+function handleError404(req, res, next) {
+  next(new Error404('Page not found. 404.'));
+}
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -44,7 +49,7 @@ app.post('/signup', celebrate({
 
 app.use('/users', auth, users);
 app.use('/cards', auth, cards);
-app.use('*', error404);
+app.use('/*', handleError404);
 app.use(errors());
 app.use(handleError);
 

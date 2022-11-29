@@ -1,4 +1,6 @@
 const handleError = (err, req, res, next) => {
+  if (!err) return;
+
   const { statusCode = 500, message } = err;
 
   res
